@@ -1,4 +1,4 @@
-module github.com/sapcc/helm-outdated-dependencies
+module github.com/uniknow/helm-outdated
 
 go 1.12
 

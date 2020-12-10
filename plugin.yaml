@@ -1,4 +1,4 @@
-name: "outdated-dependencies"
+name: "outdated"
 version: "1.2.8"
 usage: "Manage outdated dependencies of a helm chart"
 description: "This plugin helps to find and update outdated dependencies of a helm chart"

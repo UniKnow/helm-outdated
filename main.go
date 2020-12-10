@@ -23,7 +23,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/sapcc/helm-outdated-dependencies/cmd"
+	"github.com/uniknow/helm-outdated/cmd"
 )
 
 func main() {

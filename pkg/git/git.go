@@ -25,7 +25,7 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	"github.com/sapcc/helm-outdated-dependencies/pkg/cmd"
+	"github.com/uniknow/helm-outdated/pkg/cmd"
 )
 
 var (

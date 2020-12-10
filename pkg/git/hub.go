@@ -23,7 +23,7 @@ import (
 	"fmt"
 
 	"github.com/pkg/errors"
-	"github.com/sapcc/helm-outdated-dependencies/pkg/cmd"
+	"github.com/uniknow/helm-outdated/pkg/cmd"
 )
 
 // Hub used for interacting with the github.com API.

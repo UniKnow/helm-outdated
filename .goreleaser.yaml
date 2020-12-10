@@ -1,6 +1,6 @@
 builds:
   - main: ./main.go
-    binary: ./bin/helm-outdated-dependencies
+    binary: ./bin/helm-outdated
     env:
       - CGO_ENABLED=0
     goos:

@@ -26,8 +26,8 @@ import (
 	"time"
 
 	"github.com/gosuri/uitable"
-	"github.com/sapcc/helm-outdated-dependencies/pkg/git"
-	"github.com/sapcc/helm-outdated-dependencies/pkg/helm"
+	"github.com/uniknow/helm-outdated/pkg/git"
+	"github.com/uniknow/helm-outdated/pkg/helm"
 	"github.com/spf13/cobra"
 	helm_env "k8s.io/helm/pkg/helm/environment"
 )
