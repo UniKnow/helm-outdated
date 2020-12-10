@@ -1,0 +1,6 @@
+name: outdated
+version: 0.0.5
+usage: list outdated subcharts
+description: |-
+  A Helm plugin to list outdated subcharts
+command: "$HELM_PLUGIN_DIR/outdated.sh"
