@@ -1,6 +1,9 @@
-name: outdated
-version: 0.0.5
-usage: list outdated subcharts
-description: |-
-  A Helm plugin to list outdated subcharts
-command: "$HELM_PLUGIN_DIR/outdated.sh"
+name: "outdated-dependencies"
+version: "1.2.8"
+usage: "Manage outdated dependencies of a helm chart"
+description: "This plugin helps to find and update outdated dependencies of a helm chart"
+command: "$HELM_PLUGIN_DIR/bin/helm-outdated-dependencies"
+useTunnel: false
+hooks:
+  install: "cd $HELM_PLUGIN_DIR; scripts/install_plugin.sh"
+  update: "cd $HELM_PLUGIN_DIR; scripts/install_plugin.sh"

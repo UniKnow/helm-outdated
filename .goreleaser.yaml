@@ -1,0 +1,17 @@
+builds:
+  - main: ./main.go
+    binary: ./bin/helm-outdated-dependencies
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - darwin
+      - linux
+      - windows
+    goarch:
+      - amd64
+
+archives:
+  - format: tar.gz
+    files:
+      - LICENSE
+      - plugin.yaml

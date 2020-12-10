@@ -1,0 +1,4 @@
+dependencies:
+  - name: testdependency
+    repository: https://repo.evil.corp
+    version: v0.0.1
