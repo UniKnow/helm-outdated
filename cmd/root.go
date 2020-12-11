@@ -27,11 +27,11 @@ var rootCmdLongUsage = `
 Helm plugin to manage outdated dependencies of a Helm chart.
 
 Examples:
-  $ helm outdated-dependencies list <pathToChart> 										- Checks if there's a newer version of any dependency available in the specified repository.
-  $ helm outdated-dependencies list <pathToChart> --repositories repo1.corp,repo2.corp 	- Checks if there's a newer version of any dependency available only using the given repositories. 
+  $ helm outdated list <pathToChart> 										- Checks if there's a newer version of any dependency available in the specified repository.
+  $ helm outdated list <pathToChart> --repositories repo1.corp,repo2.corp 	- Checks if there's a newer version of any dependency available only using the given repositories.
 
-  $ helm outdated-dependencies update <pathToChart> 							- Updates all outdated dependencies to the latest version found in the repository.
-  $ helm outdated-dependencies update <pathToChart> --increment-chart-version	- Updates all outdated dependencies to the latest version found in the repository and increments the version of the Helm chart.
+  $ helm outdated update <pathToChart> 							- Updates all outdated dependencies to the latest version found in the repository.
+  $ helm outdated update <pathToChart> --increment-chart-version	- Updates all outdated dependencies to the latest version found in the repository and increments the version of the Helm chart.
 `
 
 func New() *cobra.Command {

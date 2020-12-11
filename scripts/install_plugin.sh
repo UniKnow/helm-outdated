@@ -8,15 +8,15 @@ if [ -n "${HELM_OUTDATED_DEPENDENCIES_PLUGIN_NO_INSTALL_HOOK}" ]; then
 fi
 
 version="$(cat plugin.yaml | grep "version" | cut -d '"' -f 2)"
-echo "Downloading and installing helm-outdated-dependencies v${version} ..."
+echo "Downloading and installing helm-outdated v${version} ..."
 
 url=""
 if [ "$(uname)" = "Darwin" ]; then
-    url="https://github.com/sapcc/helm-outdated-dependencies/releases/download/v${version}/helm-outdated-dependencies_${version}_darwin_amd64.tar.gz"
+    url="https://github.com/uniknow/helm-outdated/releases/download/v${version}/helm-outdated_${version}_darwin_amd64.tar.gz"
 elif [ "$(uname)" = "Linux" ] ; then
-    url="https://github.com/sapcc/helm-outdated-dependencies/releases/download/v${version}/helm-outdated-dependencies_${version}_linux_amd64.tar.gz"
+    url="https://github.com/uniknow/helm-outdated/releases/download/v${version}/helm-outdated_${version}_linux_amd64.tar.gz"
 else
-    url="https://github.com/sapcc/helm-outdated-dependencies/releases/download/v${version}/helm-outdated-dependencies_${version}_windows_amd64.tar.gz"
+    url="https://github.com/uniknow/helm-outdated/releases/download/v${version}/helm-outdated_${version}_windows_amd64.tar.gz"
 fi
 
 echo $url
@@ -31,5 +31,5 @@ else
     wget -q "${url}" -O "releases/v${version}.tar.gz"
 fi
 tar xzf "releases/v${version}.tar.gz" -C "releases/v${version}"
-mv "releases/v${version}/bin/helm-outdated-dependencies" "bin/helm-outdated-dependencies" || \
-    mv "releases/v${version}/bin/helm-outdated-dependencies.exe" "bin/helm-outdated-dependencies"
+mv "releases/v${version}/bin/helm-outdated" "bin/helm-outdated" || \
+    mv "releases/v${version}/bin/helm-outdated.exe" "bin/helm-outdated"

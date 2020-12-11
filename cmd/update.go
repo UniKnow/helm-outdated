@@ -55,10 +55,10 @@ Update outdated dependencies of a given chart to their latest version.
 
 Examples:
   # Update dependencies of the given chart.
-  $ helm outdated-dependencies update <chartPath>
+  $ helm outdated update <chartPath>
 
 	# Only update specific dependencies of the given chart.
-	$ helm outdated-dependencies update <chartPath> --dependencies kube-state-metrics,prometheus-operator
+	$ helm outdated update <chartPath> --dependencies kube-state-metrics,prometheus-operator
 `
 
 func newUpdateOutdatedDependenciesCmd() *cobra.Command {

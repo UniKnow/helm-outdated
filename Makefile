@@ -1,4 +1,4 @@
-PLUGIN_NAME := outdated-dependencies
+PLUGIN_NAME := outdated
 
 VERSION=v$(shell grep -Eo "(\d+\.)+\d+" plugin.yaml)
 # Temporary directory for tools
