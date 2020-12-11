@@ -34,8 +34,8 @@ var listLongUsage = `
 Helm plugin to manage outdated dependencies of a Helm chart.
 
 Examples:
-  $ helm outdated-dependencies list
-  $ helm outdated-dependencies list <chartPath>
+  $ helm outdated list
+  $ helm outdated list <chartPath>
 `
 
 type listCmd struct {

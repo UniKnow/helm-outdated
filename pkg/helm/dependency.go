@@ -35,6 +35,9 @@ import (
 	"k8s.io/helm/pkg/getter"
 	helm_env "k8s.io/helm/pkg/helm/environment"
 	"k8s.io/helm/pkg/repo"
+
+	"helm.sh/helm/v3/pkg/helmpath"
+
 )
 
 const (
@@ -223,7 +226,7 @@ func findLatestVersionOfDependency(dep *chartutil.Dependency, helmSettings *helm
 	}
 
 	// Read the index file for the repository to get chart information and return chart URL
-	repoIndex, err := repo.LoadIndexFile(helmSettings.Home.CacheIndex(normalizeRepoName(dep.Repository)))
+	repoIndex, err := repo.LoadIndexFile(helmpath.CacheIndexFile(normalizeRepoName(dep.Repository)))
 	if err != nil {
 		return nil, err
 	}
@@ -266,7 +269,7 @@ func parallelRepoUpdate(chartDeps *chartutil.Requirements, helmSettings *helm_en
 
 		wg.Add(1)
 		go func(r *repo.ChartRepository) {
-			if err := r.DownloadIndexFile(helmSettings.Home.CacheIndex(tmpRepo.Name)); err != nil {
+			if err := r.DownloadIndexFile(helmpath.CacheIndexFile(tmpRepo.Name)); err != nil {
 				fmt.Printf("unable to get an update from the %q chart repository (%s):\n\t%s\n", r.Config.Name, r.Config.URL, err)
 			} else {
 				fmt.Printf("successfully got an update from the %q chart repository\n", r.Config.URL)
