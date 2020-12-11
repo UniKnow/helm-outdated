@@ -63,7 +63,7 @@ Examples:
 
 func newUpdateOutdatedDependenciesCmd() *cobra.Command {
 	u := &updateCmd{
-		helmSettings: &helm_env.EnvSettings{
+		helmSettings: &helm_env.EnvSettings {
 			Home: helm.GetHelmHome(),
 		},
 		dependencyFilter: &helm.Filter{},
@@ -128,12 +128,16 @@ func (u *updateCmd) update() error {
 	fmt.Println(u.formatResults(outdatedDeps))
 
 	if u.isIncrementChartVersion || u.isAutoUpdate {
+	    fmt.Println("UPDATING CHART VERSION")
 		if err = helm.IncrementChartVersion(u.chartPath, helm.IncTypes.Patch); err != nil {
+		    fmt.Println("ERROR OCCURRED WHILE UPDATING CHART VERSION")
 			return err
 		}
 	}
 
+	fmt.Println("UPDATING DEPENDENCIES")
 	if err := helm.UpdateDependencies(u.chartPath, outdatedDeps, u.indent, u.helmSettings); err != nil {
+		fmt.Println("ERROR OCCURRED WHILE UPDATING DEPENDENCIES")
 		return err
 	}
 

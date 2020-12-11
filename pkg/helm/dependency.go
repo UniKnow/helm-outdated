@@ -20,11 +20,11 @@
 package helm
 
 import (
-	"bytes"
+//	"bytes"
 	"fmt"
-	"github.com/pkg/errors"
-	"k8s.io/helm/pkg/downloader"
-	"os"
+//	"github.com/pkg/errors"
+//	"k8s.io/helm/pkg/downloader"
+//	"os"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -117,42 +117,44 @@ func UpdateDependencies(chartPath string, reqsToUpdate []*Result, indent int, he
 		return err
 	}
 
-	return syncRequirementsLock(chartPath, helmSettings)
+//	return syncRequirementsLock(chartPath, helmSettings)
+    return nil;
 }
 
-func syncRequirementsLock(chartPath string, helmSettings *helm_env.EnvSettings) error {
-	var out bytes.Buffer
-
-	debug := false
-	if v, ok := os.LookupEnv("DEBUG"); ok {
-		debug = v == "true"
-	}
-
-	dm := downloader.Manager{
-		Out:        &out,
-		ChartPath:  chartPath,
-		HelmHome:   helmSettings.Home,
-		Verify:     downloader.VerifyNever,
-		Debug:      debug,
-		Keyring:    os.ExpandEnv("$HOME/.gnupg/pubring.gpg"),
-		SkipUpdate: true,
-		Getters:    getter.All(*helmSettings),
-	}
-
-	// Try to update the dependencies assuming the repositories were refreshed already.
-	// If not, update the repositories and try again.
-	if err := dm.Update(); err != nil {
-		fmt.Printf("error updating helm dependencies: %s\n", out.String())
-
-		if err := dm.UpdateRepositories(); err != nil {
-			return errors.Wrap(err, "error during helm repository update")
-		}
-
-		return dm.Update()
-	}
-
-	return nil
-}
+// @deprecate: Syncing of requirements lock file should be done via helm dependencies update
+// func syncRequirementsLock(chartPath string, helmSettings *helm_env.EnvSettings) error {
+// 	var out bytes.Buffer
+//
+// 	debug := false
+// 	if v, ok := os.LookupEnv("DEBUG"); ok {
+// 		debug = v == "true"
+// 	}
+//
+// 	dm := downloader.Manager{
+// 		Out:        &out,
+// 		ChartPath:  chartPath,
+// 		HelmHome:   helmSettings.Home,
+// 		Verify:     downloader.VerifyNever,
+// 		Debug:      debug,
+// 		Keyring:    os.ExpandEnv("$HOME/.gnupg/pubring.gpg"),
+// 		SkipUpdate: true,
+// 		Getters:    getter.All(*helmSettings),
+// 	}
+//
+// 	// Try to update the dependencies assuming the repositories were refreshed already.
+// 	// If not, update the repositories and try again.
+// 	if err := dm.Update(); err != nil {
+// 		fmt.Printf("error updating helm dependencies: %s\n", out.String())
+//
+// 		if err := dm.UpdateRepositories(); err != nil {
+// 			return errors.Wrap(err, "error during helm repository update")
+// 		}
+//
+// 		return dm.Update()
+// 	}
+//
+// 	return nil
+// }
 
 // IncrementChart version increments the patch version of the Chart.
 func IncrementChartVersion(chartPath string, incType IncType) error {
