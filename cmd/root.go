@@ -36,7 +36,7 @@ Examples:
 
 func New() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:       "outdated-dependencies",
+		Use:       "outdated",
 		Long:      rootCmdLongUsage,
 		ValidArgs: []string{"chartPath"},
 	}
@@ -53,4 +53,5 @@ func addCommonFlags(cmd *cobra.Command) {
 	cmd.Flags().IntP("max-column-width", "w", 60, "Max column width to use for tables")
 	cmd.Flags().StringSliceP("repositories", "r", []string{}, "Limit search to the given repository URLs. Can also just provide a part of the URL.")
 	cmd.Flags().StringSliceP("dependencies", "", []string{}, "Only considers the given dependencies.")
+	cmd.Flags().Bool("debug",false,"Enable debug")
 }

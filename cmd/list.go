@@ -24,6 +24,8 @@ import (
 	"github.com/pkg/errors"
 	"path/filepath"
 
+    log "github.com/sirupsen/logrus"
+
 	"github.com/gosuri/uitable"
 	"github.com/uniknow/helm-outdated/pkg/helm"
 	"github.com/spf13/cobra"
@@ -68,6 +70,14 @@ func newListOutdatedDependenciesCmd() *cobra.Command {
 				return err
 			}
 			l.chartPath = path
+
+            if debug, err := cmd.Flags().GetBool("debug"); err == nil {
+                if debug == true {
+                    log.SetLevel(log.DebugLevel)
+                } else {
+                    log.SetLevel(log.InfoLevel)
+                }
+            }
 
 			if maxColumnWidth, err := cmd.Flags().GetUint("max-column-width"); err == nil {
 				l.maxColumnWidth = maxColumnWidth

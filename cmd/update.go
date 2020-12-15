@@ -25,6 +25,9 @@ import (
 	"strings"
 	"time"
 
+
+    log "github.com/sirupsen/logrus"
+
 	"github.com/gosuri/uitable"
 	"github.com/uniknow/helm-outdated/pkg/git"
 	"github.com/uniknow/helm-outdated/pkg/helm"
@@ -72,6 +75,14 @@ func newUpdateOutdatedDependenciesCmd() *cobra.Command {
 		Long:         updateLongUsage,
 		SilenceUsage: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
+            if debug, err := cmd.Flags().GetBool("debug"); err == nil {
+                if debug == true {
+                    log.SetLevel(log.DebugLevel)
+                } else {
+                    log.SetLevel(log.InfoLevel)
+                }
+            }
+
 			if maxColumnWidth, err := cmd.Flags().GetUint("max-column-width"); err == nil {
 				u.maxColumnWidth = maxColumnWidth
 			}
