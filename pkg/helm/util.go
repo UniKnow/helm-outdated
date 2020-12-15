@@ -24,7 +24,7 @@ import (
 	"strings"
 
 	"github.com/Masterminds/semver"
-	"k8s.io/helm/pkg/proto/hapi/chart"
+	"helm.sh/helm/v3/pkg/chart"
 )
 
 func stringSliceContains(stringSlice []string, searchString string) bool {
@@ -49,12 +49,12 @@ func normalizeString(theString string) string {
 }
 
 func getChartVersion(c *chart.Chart) (*semver.Version, error) {
-	m := c.GetMetadata()
+	m := c.Metadata
 	if m == nil {
 		return nil, errors.New("chart has no metdata")
 	}
 
-	v := m.GetVersion()
+	v := m.Version
 	if v == "" {
 		return nil, errors.New("chart has no version")
 	}

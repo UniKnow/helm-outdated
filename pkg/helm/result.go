@@ -21,15 +21,13 @@ package helm
 
 import (
 	"sort"
-
+    "helm.sh/helm/v3/pkg/chart"
 	"github.com/Masterminds/semver"
-	"k8s.io/helm/pkg/chartutil"
 )
 
 // Result ...
 type Result struct {
-	*chartutil.Dependency
-
+	*chart.Dependency
 	CurrentVersion,
 	LatestVersion *semver.Version
 }

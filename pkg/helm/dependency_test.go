@@ -22,7 +22,7 @@ package helm
 import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"k8s.io/helm/pkg/chartutil"
+	"helm.sh/helm/v3/pkg/chartutil"
 	"os"
 	"path"
 	"testing"

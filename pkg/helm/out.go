@@ -27,8 +27,8 @@ import (
 	"path/filepath"
 
 	yamlv3 "gopkg.in/yaml.v3"
-	"k8s.io/helm/pkg/chartutil"
-	"k8s.io/helm/pkg/proto/hapi/chart"
+
+	"helm.sh/helm/v3/pkg/chart"
 )
 
 func toYamlWithIndent(in interface{}, indent int) ([]byte, error) {
@@ -53,7 +53,7 @@ func toYamlWithIndent(in interface{}, indent int) ([]byte, error) {
 	return buf.Bytes(), err
 }
 
-func writeRequirements(chartPath string, reqs *chartutil.Requirements, indent int) error {
+func writeRequirements(chartPath string, reqs []*chart.Dependency, indent int) error {
 	data, err := toYamlWithIndent(reqs, indent)
 	if err != nil {
 		return err

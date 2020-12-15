@@ -29,12 +29,12 @@ import (
 	"github.com/uniknow/helm-outdated/pkg/git"
 	"github.com/uniknow/helm-outdated/pkg/helm"
 	"github.com/spf13/cobra"
-	helm_env "k8s.io/helm/pkg/helm/environment"
+
+	"helm.sh/helm/v3/pkg/cli"
 )
 
 type updateCmd struct {
 	chartPath               string
-	helmSettings            *helm_env.EnvSettings
 	maxColumnWidth          uint
 	indent                  int
 	isIncrementChartVersion bool
@@ -63,9 +63,6 @@ Examples:
 
 func newUpdateOutdatedDependenciesCmd() *cobra.Command {
 	u := &updateCmd{
-		helmSettings: &helm_env.EnvSettings {
-			Home: helm.GetHelmHome(),
-		},
 		dependencyFilter: &helm.Filter{},
 		maxColumnWidth:   60,
 	}
@@ -116,7 +113,7 @@ func newUpdateOutdatedDependenciesCmd() *cobra.Command {
 }
 
 func (u *updateCmd) update() error {
-	outdatedDeps, err := helm.ListOutdatedDependencies(u.chartPath, u.helmSettings, u.dependencyFilter)
+	outdatedDeps, err := helm.ListOutdatedDependencies(u.chartPath, cli.New(), u.dependencyFilter)
 	if err != nil {
 		return err
 	}
@@ -136,7 +133,7 @@ func (u *updateCmd) update() error {
 	}
 
 	fmt.Println("UPDATING DEPENDENCIES")
-	if err := helm.UpdateDependencies(u.chartPath, outdatedDeps, u.indent, u.helmSettings); err != nil {
+	if err := helm.UpdateDependencies(u.chartPath, outdatedDeps, u.indent); err != nil {
 		fmt.Println("ERROR OCCURRED WHILE UPDATING DEPENDENCIES")
 		return err
 	}
