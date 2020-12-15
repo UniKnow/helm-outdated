@@ -20,6 +20,8 @@
 package cmd
 
 import (
+    "os"
+    "log"
 	"github.com/spf13/cobra"
 )
 
@@ -33,6 +35,17 @@ Examples:
   $ helm outdated update <pathToChart> 							- Updates all outdated dependencies to the latest version found in the repository.
   $ helm outdated update <pathToChart> --increment-chart-version	- Updates all outdated dependencies to the latest version found in the repository and increments the version of the Helm chart.
 `
+
+var PluginLogger *log.Logger
+
+func init() {
+    file, err := os.OpenFile("outdated.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    PluginLogger = log.New(file, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
+}
 
 func New() *cobra.Command {
 	cmd := &cobra.Command{
