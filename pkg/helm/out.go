@@ -24,12 +24,11 @@ import (
 	"encoding/json"
 	"os"
 	"path"
-	"fmt"
 	"path/filepath"
 
 	"gopkg.in/yaml.v3"
 
-    //"github.com/uniknow/helm-outdated/cmd/root"
+    log "github.com/sirupsen/logrus"
 
 	"helm.sh/helm/v3/pkg/chart"
 )
@@ -46,19 +45,16 @@ type Requirements struct {
 func toYamlWithIndent(in interface{}, indent int) ([]byte, error) {
 	// Unfortunately chartutil.Requirements, charts.Chart structs only have the JSON anchors, but not the YAML ones.
 	// So we have to take the JSON detour.
-	//PluginLogger.Printf("Converting %s into yaml", in)
+	log.Debug("Converting updated requirements into yaml")
 	jsonData, err := json.Marshal(in)
 	if err != nil {
 		return nil, err
 	}
 
-    fmt.Printf("Writing requirements %s\n", jsonData)
 	var jsonObj interface{}
 	if err := yaml.Unmarshal(jsonData, &jsonObj); err != nil {
 		return nil, err
 	}
-
-    fmt.Printf("Writing requirements %s\n", jsonObj)
 
 	var buf bytes.Buffer
 	enc := yaml.NewEncoder(&buf)

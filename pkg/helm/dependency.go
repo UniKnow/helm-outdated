@@ -20,23 +20,22 @@
 package helm
 
 import (
-//	"bytes"
 	"fmt"
-//	"github.com/pkg/errors"
-//	"os"
 	"path/filepath"
 	"sort"
 	"strings"
 	"sync"
 
 	"github.com/Masterminds/semver"
+
+    log "github.com/sirupsen/logrus"
+
 	"helm.sh/helm/v3/pkg/getter"
 	"helm.sh/helm/v3/pkg/repo"
 	"helm.sh/helm/v3/pkg/chart"
     "helm.sh/helm/v3/pkg/chart/loader"
     "helm.sh/helm/v3/pkg/cli"
 	"helm.sh/helm/v3/pkg/helmpath"
-
 )
 
 const (
@@ -94,6 +93,7 @@ func ListOutdatedDependencies(chartPath string, settings *cli.EnvSettings, depen
 
 // UpdateDependencies updates the dependencies of the given chart.
 func UpdateDependencies(chartPath string, reqsToUpdate []*Result, indent int) error {
+    log.Info("Updating outdated dependencies of chart '" + chartPath +"''")
 	c, err := loader.Load(chartPath)
 	if err != nil {
 		return err
