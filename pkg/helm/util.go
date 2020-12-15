@@ -23,6 +23,8 @@ import (
 	"errors"
 	"strings"
 
+    "net/url"
+
 	"github.com/Masterminds/semver"
 	"helm.sh/helm/v3/pkg/chart"
 )
@@ -37,7 +39,9 @@ func stringSliceContains(stringSlice []string, searchString string) bool {
 }
 
 func normalizeRepoName(repoURL string) string {
-	name := strings.TrimPrefix(repoURL, "https://")
+    // Remove trailing schema from repository URL
+    url, _ := url.Parse(repoURL)
+	name := strings.TrimPrefix(repoURL, url.Scheme + "://")
 	name = strings.TrimSuffix(name, "/")
 	name = strings.ReplaceAll(name, "/", "-")
 	return strings.ReplaceAll(name, ".", "-")

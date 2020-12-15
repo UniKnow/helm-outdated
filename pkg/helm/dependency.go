@@ -56,6 +56,7 @@ func ListOutdatedDependencies(chartPath string, settings *cli.EnvSettings, depen
 		return nil, err
 	}
 
+    // Update local cached repositories
 	if err = parallelRepoUpdate(chartDeps, settings); err != nil {
 		return nil, err
 	}
@@ -68,7 +69,7 @@ func ListOutdatedDependencies(chartPath string, settings *cli.EnvSettings, depen
 			continue
 		}
 
-		latestVersion, err := findLatestVersionOfDependency(dep)
+		latestVersion, err := findLatestVersionOfDependency(dep, settings)
 		if err != nil {
 			fmt.Printf("Error getting latest version of %s: %s\n", dep.Name, err.Error())
 			continue
@@ -174,7 +175,7 @@ func loadDependencies(chartPath string, f *Filter) ([]*chart.Dependency, error) 
 }
 
 // findLatestVersionOfDependency returns the latest version of the given dependency in the repository.
-func findLatestVersionOfDependency(dep *chart.Dependency) (*semver.Version, error) {
+func findLatestVersionOfDependency(dep *chart.Dependency, settings *cli.EnvSettings) (*semver.Version, error) {
 	// Handle local dependencies.
 	if strings.Contains(dep.Repository, filePrefix) {
 		c, err := loader.Load(strings.TrimPrefix(dep.Repository, filePrefix))
@@ -185,7 +186,8 @@ func findLatestVersionOfDependency(dep *chart.Dependency) (*semver.Version, erro
 	}
 
 	// Read the index file for the repository to get chart information and return chart URL
-	repoIndex, err := repo.LoadIndexFile(helmpath.CacheIndexFile(normalizeRepoName(dep.Repository)))
+	fmt.Printf("Loading cache index file for repository %s from cache dir %s\n", dep.Repository, settings.RepositoryCache)
+	repoIndex, err := repo.LoadIndexFile(filepath.Join(settings.RepositoryCache, helmpath.CacheIndexFile(normalizeRepoName(dep.Repository))))
 	if err != nil {
 		return nil, err
 	}
