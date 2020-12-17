@@ -1,6 +1,6 @@
 PLUGIN_NAME := outdated
 
-VERSION = $(shell  grep -o "\d.\d.\d" plugin.yaml)
+VERSION = $(shell  grep "\d.\d.\d" plugin.yaml)
 $(info Executing make for Helm outdated ${VERSION})
 
 # Temporary directory for tools
