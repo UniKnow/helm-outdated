@@ -6,8 +6,6 @@ on:
       # Push events on main branch
       - master
 
-env:
-
 jobs:
   release-helm-plugin:
     runs-on: ubuntu-latest
