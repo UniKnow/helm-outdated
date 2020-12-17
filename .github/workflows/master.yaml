@@ -1,0 +1,32 @@
+name: Helm Outdated Plugin
+
+on:
+  push:
+    branches:
+      # Push events on main branch
+      - master
+
+env:
+
+
+jobs:
+  release-helm-plugin:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout > Code
+        uses: actions/checkout@v2
+
+      - name: Checkout > Cleanup
+        run: git fetch --prune --unshallow
+
+      - name: Setup > Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '^1.15.5' # The Go version to download (if necessary) and use.
+
+      - name: Build > compile code
+        run: make build
+
+      - name: Deploy > Release plugin
+        run: make release

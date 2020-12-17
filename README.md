@@ -45,7 +45,7 @@ To build the outdated plugin and test it locally:
 
 ```
 make build
-helm plugin uninstall outdated
+make remove
 make install
 ```
 
