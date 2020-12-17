@@ -1,12 +1,14 @@
 PLUGIN_NAME := outdated
 
-VERSION=v$(shell grep -Eo "(\d+\.)+\d+" plugin.yaml)
+VERSION ?= $(shell grep -Eo "(\d+\.)+\d+" plugin.yaml)
+$(info Executing make for Helm outdated ${VERSION})
+
 # Temporary directory for tools
 TOOLS_BIN_DIR = $(shell pwd)/tmp/bin
 
 .PHONY: build
 build: build_linux build_mac build_windows
-	echo Finished building ${VERSION} of Helm outdated
+	@echo Finished building ${VERSION} of Helm outdated
 
 build_windows: export GOARCH=amd64
 build_windows:
@@ -45,7 +47,7 @@ tree:
 	@tree -I vendor
 
 git-tag-release: check-release-version
-	echo Creating tag for ${VERSION}
+	@echo Creating tag for ${VERSION}
 	git config --global user.name "UniKnow"
 	git tag --annotate ${VERSION} --message "helm-outdated ${VERSION}"
 
