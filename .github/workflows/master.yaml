@@ -6,6 +6,9 @@ on:
       # Push events on main branch
       - master
 
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
+
 jobs:
   release-helm-plugin:
     runs-on: ubuntu-latest
