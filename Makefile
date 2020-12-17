@@ -1,5 +1,6 @@
 PLUGIN_NAME := outdated
 
+# TODO: Should grep this value from plugin.yaml: $(shell grep -Eo "(\d+\.)+\d+" plugin.yaml); however this doesn't return a value in github actions on ubuntu
 VERSION = 1.2.8
 $(info Executing make for Helm outdated ${VERSION})
 
