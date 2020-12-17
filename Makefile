@@ -44,6 +44,7 @@ tree:
 	@tree -I vendor
 
 git-tag-release: check-release-version
+	git config --global user.name "UniKnow"
 	git tag --annotate ${VERSION} --message "helm-outdated ${VERSION}"
 
 check-release-version:
@@ -57,6 +58,7 @@ $(TOOLS_BIN_DIR):
 
 .PHONY: release
 release: git-tag-release goreleaser
+
 	@scripts/release.sh $(VERSION)
 
 .PHONY: install
