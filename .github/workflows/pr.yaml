@@ -1,15 +1,14 @@
-name: Helm Outdated Plugin
+name: Pull Request
 
 on:
-  push:
-    branches:
-      # Push events on main branch
-      - master
+  pull_request:
+    branches: [ master ]
+    types: [opened, synchronize, reopened, edited]
 
 env:
 
 jobs:
-  release-helm-plugin:
+  build-helm-plugin:
     runs-on: ubuntu-latest
 
     steps:
@@ -27,5 +26,3 @@ jobs:
       - name: Build > compile code
         run: make build
 
-      - name: Deploy > Release plugin
-        run: make release
