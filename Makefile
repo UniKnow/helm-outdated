@@ -6,6 +6,7 @@ TOOLS_BIN_DIR = $(shell pwd)/tmp/bin
 
 .PHONY: build
 build: build_linux build_mac build_windows
+	echo Finished building ${VERSION} of Helm outdated
 
 build_windows: export GOARCH=amd64
 build_windows:
@@ -44,6 +45,7 @@ tree:
 	@tree -I vendor
 
 git-tag-release: check-release-version
+	echo Creating tag for ${VERSION}
 	git config --global user.name "UniKnow"
 	git tag --annotate ${VERSION} --message "helm-outdated ${VERSION}"
 
