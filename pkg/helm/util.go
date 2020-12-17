@@ -23,8 +23,10 @@ import (
 	"errors"
 	"strings"
 
+    "net/url"
+
 	"github.com/Masterminds/semver"
-	"k8s.io/helm/pkg/proto/hapi/chart"
+	"helm.sh/helm/v3/pkg/chart"
 )
 
 func stringSliceContains(stringSlice []string, searchString string) bool {
@@ -37,7 +39,9 @@ func stringSliceContains(stringSlice []string, searchString string) bool {
 }
 
 func normalizeRepoName(repoURL string) string {
-	name := strings.TrimPrefix(repoURL, "https://")
+    // Remove trailing schema from repository URL
+    url, _ := url.Parse(repoURL)
+	name := strings.TrimPrefix(repoURL, url.Scheme + "://")
 	name = strings.TrimSuffix(name, "/")
 	name = strings.ReplaceAll(name, "/", "-")
 	return strings.ReplaceAll(name, ".", "-")
@@ -49,12 +53,12 @@ func normalizeString(theString string) string {
 }
 
 func getChartVersion(c *chart.Chart) (*semver.Version, error) {
-	m := c.GetMetadata()
+	m := c.Metadata
 	if m == nil {
 		return nil, errors.New("chart has no metdata")
 	}
 
-	v := m.GetVersion()
+	v := m.Version
 	if v == "" {
 		return nil, errors.New("chart has no version")
 	}

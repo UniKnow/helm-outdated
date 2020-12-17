@@ -39,6 +39,16 @@ Example:
 helm outdated update <pathToChart> --auto-update --author-name=sapcc-bot --author-email=sapcc-bot@sap.com
 ```
 
+## BUILD
+
+To build the outdated plugin and test it locally:
+
+```
+make build
+make remove
+make install
+```
+
 ## RELEASE
 
 Update the version in the [plugin.yaml](plugin.yaml), export the `GORELEASER_GITHUB_TOKEN` (needs `repo` scope) and run `make release`.

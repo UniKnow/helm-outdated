@@ -1,0 +1,26 @@
+name: Pull Request
+
+on:
+  pull_request:
+    branches: [ master ]
+    types: [opened, synchronize, reopened, edited]
+
+jobs:
+  build-helm-plugin:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout > Code
+        uses: actions/checkout@v2
+
+      - name: Checkout > Cleanup
+        run: git fetch --prune --unshallow
+
+      - name: Setup > Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '^1.15.5' # The Go version to download (if necessary) and use.
+
+      - name: Build > compile code
+        run: make build
+

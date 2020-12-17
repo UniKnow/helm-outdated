@@ -26,26 +26,38 @@ import (
 	"path"
 	"path/filepath"
 
-	yamlv3 "gopkg.in/yaml.v3"
-	"k8s.io/helm/pkg/chartutil"
-	"k8s.io/helm/pkg/proto/hapi/chart"
+	"gopkg.in/yaml.v3"
+
+    log "github.com/sirupsen/logrus"
+
+	"helm.sh/helm/v3/pkg/chart"
 )
+
+// Requirements is a list of requirements for a chart.
+//
+// Requirements are charts upon which this chart depends. This expresses
+// developer intent.
+type Requirements struct {
+	Dependencies []*chart.Dependency `json:"dependencies,flow,inline"`
+	test int
+}
 
 func toYamlWithIndent(in interface{}, indent int) ([]byte, error) {
 	// Unfortunately chartutil.Requirements, charts.Chart structs only have the JSON anchors, but not the YAML ones.
 	// So we have to take the JSON detour.
+	log.Debug("Converting updated requirements into yaml")
 	jsonData, err := json.Marshal(in)
 	if err != nil {
 		return nil, err
 	}
 
 	var jsonObj interface{}
-	if err := yamlv3.Unmarshal(jsonData, &jsonObj); err != nil {
+	if err := yaml.Unmarshal(jsonData, &jsonObj); err != nil {
 		return nil, err
 	}
 
 	var buf bytes.Buffer
-	enc := yamlv3.NewEncoder(&buf)
+	enc := yaml.NewEncoder(&buf)
 	defer enc.Close()
 
 	enc.SetIndent(indent)
@@ -53,8 +65,10 @@ func toYamlWithIndent(in interface{}, indent int) ([]byte, error) {
 	return buf.Bytes(), err
 }
 
-func writeRequirements(chartPath string, reqs *chartutil.Requirements, indent int) error {
-	data, err := toYamlWithIndent(reqs, indent)
+func writeRequirements(chartPath string, reqs []*chart.Dependency, indent int) error {
+
+
+	data, err := toYamlWithIndent(&Requirements{Dependencies:   reqs,}, indent)
 	if err != nil {
 		return err
 	}

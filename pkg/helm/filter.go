@@ -20,7 +20,7 @@
 package helm
 
 import (
-	"k8s.io/helm/pkg/chartutil"
+    "helm.sh/helm/v3/pkg/chart"
 )
 
 // Filter for dependencies.
@@ -30,8 +30,8 @@ type Filter struct {
 }
 
 // FilterDependencies ...
-func (f *Filter) FilterDependencies(dependencies []*chartutil.Dependency) []*chartutil.Dependency {
-	var filteredDeps []*chartutil.Dependency
+func (f *Filter) FilterDependencies(dependencies []*chart.Dependency) []*chart.Dependency {
+	var filteredDeps []*chart.Dependency
 	for _, dep := range dependencies {
 		keep := true
 

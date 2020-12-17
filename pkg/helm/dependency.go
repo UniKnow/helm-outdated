@@ -20,24 +20,22 @@
 package helm
 
 import (
-	"bytes"
 	"fmt"
-	"github.com/pkg/errors"
-	"k8s.io/helm/pkg/downloader"
-	"os"
 	"path/filepath"
 	"sort"
 	"strings"
 	"sync"
 
 	"github.com/Masterminds/semver"
-	"k8s.io/helm/pkg/chartutil"
-	"k8s.io/helm/pkg/getter"
-	helm_env "k8s.io/helm/pkg/helm/environment"
-	"k8s.io/helm/pkg/repo"
 
+    log "github.com/sirupsen/logrus"
+
+	"helm.sh/helm/v3/pkg/getter"
+	"helm.sh/helm/v3/pkg/repo"
+	"helm.sh/helm/v3/pkg/chart"
+    "helm.sh/helm/v3/pkg/chart/loader"
+    "helm.sh/helm/v3/pkg/cli"
 	"helm.sh/helm/v3/pkg/helmpath"
-
 )
 
 const (
@@ -47,29 +45,30 @@ const (
 )
 
 // ListOutdatedDependencies returns a list of outdated dependencies of the given chart.
-func ListOutdatedDependencies(chartPath string, helmSettings *helm_env.EnvSettings, dependencyFilter *Filter) ([]*Result, error) {
+func ListOutdatedDependencies(chartPath string, settings *cli.EnvSettings, dependencyFilter *Filter) ([]*Result, error) {
 	chartDeps, err := loadDependencies(chartPath, dependencyFilter)
 	if err != nil {
-		if err == chartutil.ErrRequirementsNotFound {
-			fmt.Printf("Chart %v has no requirements.\n", chartPath)
-			return nil, nil
-		}
+// 		if err == chartutil.ErrRequirementsNotFound {
+// 			fmt.Printf("Chart %v has no requirements.\n", chartPath)
+// 			return nil, nil
+// 		}
 		return nil, err
 	}
 
-	if err = parallelRepoUpdate(chartDeps, helmSettings); err != nil {
+    // Update local cached repositories
+	if err = parallelRepoUpdate(chartDeps, settings); err != nil {
 		return nil, err
 	}
 
 	var res []*Result
-	for _, dep := range chartDeps.Dependencies {
+	for _, dep := range chartDeps {
 		depVersion, err := semver.NewVersion(dep.Version)
 		if err != nil {
 			fmt.Printf("Error creating semVersion for dependency %s: %s", dep.Name, err.Error())
 			continue
 		}
 
-		latestVersion, err := findLatestVersionOfDependency(dep, helmSettings)
+		latestVersion, err := findLatestVersionOfDependency(dep, settings)
 		if err != nil {
 			fmt.Printf("Error getting latest version of %s: %s\n", dep.Name, err.Error())
 			continue
@@ -93,20 +92,19 @@ func ListOutdatedDependencies(chartPath string, helmSettings *helm_env.EnvSettin
 }
 
 // UpdateDependencies updates the dependencies of the given chart.
-func UpdateDependencies(chartPath string, reqsToUpdate []*Result, indent int, helmSettings *helm_env.EnvSettings) error {
-	c, err := chartutil.Load(chartPath)
+func UpdateDependencies(chartPath string, reqsToUpdate []*Result, indent int) error {
+    log.Info("Updating outdated dependencies of chart '" + chartPath +"''")
+	c, err := loader.Load(chartPath)
 	if err != nil {
 		return err
 	}
 
-	reqs, err := chartutil.LoadRequirements(c)
-	if err != nil {
-		return err
-	}
+	reqs := c.Metadata.Dependencies
 
 	for _, newDep := range reqsToUpdate {
-		for _, oldDep := range reqs.Dependencies {
+		for _, oldDep := range reqs {
 			if newDep.Name == oldDep.Name && newDep.Repository == newDep.Repository {
+			    log.Debug("Updating dependency " + oldDep.Name + " from " + oldDep.Version + " in " + newDep.LatestVersion.String())
 				oldDep.Version = newDep.LatestVersion.String()
 			}
 		}
@@ -117,46 +115,12 @@ func UpdateDependencies(chartPath string, reqsToUpdate []*Result, indent int, he
 		return err
 	}
 
-	return syncRequirementsLock(chartPath, helmSettings)
-}
-
-func syncRequirementsLock(chartPath string, helmSettings *helm_env.EnvSettings) error {
-	var out bytes.Buffer
-
-	debug := false
-	if v, ok := os.LookupEnv("DEBUG"); ok {
-		debug = v == "true"
-	}
-
-	dm := downloader.Manager{
-		Out:        &out,
-		ChartPath:  chartPath,
-		HelmHome:   helmSettings.Home,
-		Verify:     downloader.VerifyNever,
-		Debug:      debug,
-		Keyring:    os.ExpandEnv("$HOME/.gnupg/pubring.gpg"),
-		SkipUpdate: true,
-		Getters:    getter.All(*helmSettings),
-	}
-
-	// Try to update the dependencies assuming the repositories were refreshed already.
-	// If not, update the repositories and try again.
-	if err := dm.Update(); err != nil {
-		fmt.Printf("error updating helm dependencies: %s\n", out.String())
-
-		if err := dm.UpdateRepositories(); err != nil {
-			return errors.Wrap(err, "error during helm repository update")
-		}
-
-		return dm.Update()
-	}
-
-	return nil
+    return nil;
 }
 
 // IncrementChart version increments the patch version of the Chart.
 func IncrementChartVersion(chartPath string, incType IncType) error {
-	c, err := chartutil.Load(chartPath)
+	c, err := loader.Load(chartPath)
 	if err != nil {
 		return err
 	}
@@ -182,43 +146,40 @@ func IncrementChartVersion(chartPath string, incType IncType) error {
 
 // GetChartName returns the name of the chart in the given path or an error.
 func GetChartName(chartPath string) (string, error) {
-	c, err := chartutil.Load(chartPath)
+	c, err := loader.Load(chartPath)
 	if err != nil {
 		return "", err
 	}
 
-	return c.GetMetadata().GetName(), nil
+	return c.Metadata.Name, nil
 }
 
 // loadDependencies loads the dependencies of the given chart.
-func loadDependencies(chartPath string, f *Filter) (*chartutil.Requirements, error) {
-	c, err := chartutil.Load(chartPath)
+func loadDependencies(chartPath string, f *Filter) ([]*chart.Dependency, error) {
+	c, err := loader.Load(chartPath)
 	if err != nil {
 		return nil, err
 	}
 
-	reqs, err := chartutil.LoadRequirements(c)
-	if err != nil {
-		return nil, err
-	}
+	reqs := c.Metadata.Dependencies
 
-	var deps []*chartutil.Dependency
-	for _, d := range reqs.Dependencies {
+	var deps []*chart.Dependency
+	for _, d := range reqs {
 		if strings.Contains(d.Repository, filePrefix) {
 			d.Repository = fmt.Sprintf("%s%s", filePrefix, filepath.Join(chartPath, strings.TrimPrefix(d.Repository, filePrefix)))
 		}
 		deps = append(deps, d)
 	}
 
-	reqs.Dependencies = f.FilterDependencies(deps)
+	reqs = f.FilterDependencies(deps)
 	return reqs, nil
 }
 
 // findLatestVersionOfDependency returns the latest version of the given dependency in the repository.
-func findLatestVersionOfDependency(dep *chartutil.Dependency, helmSettings *helm_env.EnvSettings) (*semver.Version, error) {
+func findLatestVersionOfDependency(dep *chart.Dependency, settings *cli.EnvSettings) (*semver.Version, error) {
 	// Handle local dependencies.
 	if strings.Contains(dep.Repository, filePrefix) {
-		c, err := chartutil.Load(strings.TrimPrefix(dep.Repository, filePrefix))
+		c, err := loader.Load(strings.TrimPrefix(dep.Repository, filePrefix))
 		if err != nil {
 			return nil, err
 		}
@@ -226,7 +187,8 @@ func findLatestVersionOfDependency(dep *chartutil.Dependency, helmSettings *helm
 	}
 
 	// Read the index file for the repository to get chart information and return chart URL
-	repoIndex, err := repo.LoadIndexFile(helmpath.CacheIndexFile(normalizeRepoName(dep.Repository)))
+	fmt.Printf("Loading cache index file for repository %s from cache dir %s\n", dep.Repository, settings.RepositoryCache)
+	repoIndex, err := repo.LoadIndexFile(filepath.Join(settings.RepositoryCache, helmpath.CacheIndexFile(normalizeRepoName(dep.Repository))))
 	if err != nil {
 		return nil, err
 	}
@@ -240,16 +202,16 @@ func findLatestVersionOfDependency(dep *chartutil.Dependency, helmSettings *helm
 	return semver.NewVersion(cv.Version)
 }
 
-func sortRequirementsAlphabetically(reqs *chartutil.Requirements) *chartutil.Requirements {
-	sort.Slice(reqs.Dependencies, func(i, j int) bool {
-		return reqs.Dependencies[i].Name < reqs.Dependencies[j].Name
+func sortRequirementsAlphabetically(reqs []*chart.Dependency) []*chart.Dependency {
+	sort.Slice(reqs, func(i, j int) bool {
+		return reqs[i].Name < reqs[j].Name
 	})
 	return reqs
 }
 
-func parallelRepoUpdate(chartDeps *chartutil.Requirements, helmSettings *helm_env.EnvSettings) error {
+func parallelRepoUpdate(chartDeps []*chart.Dependency, settings *cli.EnvSettings) error {
 	var repos []string
-	for _, dep := range chartDeps.Dependencies {
+	for _, dep := range chartDeps {
 		if !stringSliceContains(repos, dep.Repository) && !strings.Contains(dep.Repository, filePrefix) {
 			repos = append(repos, dep.Repository)
 		}
@@ -262,17 +224,17 @@ func parallelRepoUpdate(chartDeps *chartutil.Requirements, helmSettings *helm_en
 			URL:  c,
 		}
 
-		r, err := repo.NewChartRepository(tmpRepo, getter.All(*helmSettings))
+		r, err := repo.NewChartRepository(tmpRepo, getter.All(settings))
 		if err != nil {
 			return err
 		}
 
 		wg.Add(1)
 		go func(r *repo.ChartRepository) {
-			if err := r.DownloadIndexFile(helmpath.CacheIndexFile(tmpRepo.Name)); err != nil {
+			if idx,err := r.DownloadIndexFile(); err != nil {
 				fmt.Printf("unable to get an update from the %q chart repository (%s):\n\t%s\n", r.Config.Name, r.Config.URL, err)
 			} else {
-				fmt.Printf("successfully got an update from the %q chart repository\n", r.Config.URL)
+				fmt.Printf("successfully got an update from the %q chart repository, updated %s\n", r.Config.URL, idx)
 			}
 			wg.Done()
 		}(r)

@@ -24,10 +24,13 @@ import (
 	"github.com/pkg/errors"
 	"path/filepath"
 
+    log "github.com/sirupsen/logrus"
+
 	"github.com/gosuri/uitable"
 	"github.com/uniknow/helm-outdated/pkg/helm"
 	"github.com/spf13/cobra"
-	helm_env "k8s.io/helm/pkg/helm/environment"
+
+	"helm.sh/helm/v3/pkg/cli"
 )
 
 var listLongUsage = `
@@ -39,19 +42,15 @@ Examples:
 `
 
 type listCmd struct {
+//     settings
 	maxColumnWidth             uint
 	chartPath                  string
-	helmSettings               *helm_env.EnvSettings
 	failOnOutdatedDependencies bool
-
 	dependencyFilter *helm.Filter
 }
 
 func newListOutdatedDependenciesCmd() *cobra.Command {
 	l := &listCmd{
-		helmSettings: &helm_env.EnvSettings{
-			Home: helm.GetHelmHome(),
-		},
 		dependencyFilter: &helm.Filter{},
 		maxColumnWidth:   60,
 	}
@@ -71,6 +70,14 @@ func newListOutdatedDependenciesCmd() *cobra.Command {
 				return err
 			}
 			l.chartPath = path
+
+            if debug, err := cmd.Flags().GetBool("debug"); err == nil {
+                if debug == true {
+                    log.SetLevel(log.DebugLevel)
+                } else {
+                    log.SetLevel(log.InfoLevel)
+                }
+            }
 
 			if maxColumnWidth, err := cmd.Flags().GetUint("max-column-width"); err == nil {
 				l.maxColumnWidth = maxColumnWidth
@@ -95,7 +102,7 @@ func newListOutdatedDependenciesCmd() *cobra.Command {
 }
 
 func (l *listCmd) list() error {
-	outdatedDeps, err := helm.ListOutdatedDependencies(l.chartPath, l.helmSettings, l.dependencyFilter)
+	outdatedDeps, err := helm.ListOutdatedDependencies(l.chartPath, cli.New(), l.dependencyFilter)
 	if err != nil {
 		return err
 	}

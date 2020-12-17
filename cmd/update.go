@@ -25,16 +25,19 @@ import (
 	"strings"
 	"time"
 
+
+    log "github.com/sirupsen/logrus"
+
 	"github.com/gosuri/uitable"
 	"github.com/uniknow/helm-outdated/pkg/git"
 	"github.com/uniknow/helm-outdated/pkg/helm"
 	"github.com/spf13/cobra"
-	helm_env "k8s.io/helm/pkg/helm/environment"
+
+	"helm.sh/helm/v3/pkg/cli"
 )
 
 type updateCmd struct {
 	chartPath               string
-	helmSettings            *helm_env.EnvSettings
 	maxColumnWidth          uint
 	indent                  int
 	isIncrementChartVersion bool
@@ -63,9 +66,6 @@ Examples:
 
 func newUpdateOutdatedDependenciesCmd() *cobra.Command {
 	u := &updateCmd{
-		helmSettings: &helm_env.EnvSettings{
-			Home: helm.GetHelmHome(),
-		},
 		dependencyFilter: &helm.Filter{},
 		maxColumnWidth:   60,
 	}
@@ -75,6 +75,14 @@ func newUpdateOutdatedDependenciesCmd() *cobra.Command {
 		Long:         updateLongUsage,
 		SilenceUsage: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
+            if debug, err := cmd.Flags().GetBool("debug"); err == nil {
+                if debug == true {
+                    log.SetLevel(log.DebugLevel)
+                } else {
+                    log.SetLevel(log.InfoLevel)
+                }
+            }
+
 			if maxColumnWidth, err := cmd.Flags().GetUint("max-column-width"); err == nil {
 				u.maxColumnWidth = maxColumnWidth
 			}
@@ -116,7 +124,7 @@ func newUpdateOutdatedDependenciesCmd() *cobra.Command {
 }
 
 func (u *updateCmd) update() error {
-	outdatedDeps, err := helm.ListOutdatedDependencies(u.chartPath, u.helmSettings, u.dependencyFilter)
+	outdatedDeps, err := helm.ListOutdatedDependencies(u.chartPath, cli.New(), u.dependencyFilter)
 	if err != nil {
 		return err
 	}
@@ -128,12 +136,16 @@ func (u *updateCmd) update() error {
 	fmt.Println(u.formatResults(outdatedDeps))
 
 	if u.isIncrementChartVersion || u.isAutoUpdate {
+	    fmt.Println("UPDATING CHART VERSION")
 		if err = helm.IncrementChartVersion(u.chartPath, helm.IncTypes.Patch); err != nil {
+		    fmt.Println("ERROR OCCURRED WHILE UPDATING CHART VERSION")
 			return err
 		}
 	}
 
-	if err := helm.UpdateDependencies(u.chartPath, outdatedDeps, u.indent, u.helmSettings); err != nil {
+	fmt.Println("UPDATING DEPENDENCIES")
+	if err := helm.UpdateDependencies(u.chartPath, outdatedDeps, u.indent); err != nil {
+		fmt.Println("ERROR OCCURRED WHILE UPDATING DEPENDENCIES")
 		return err
 	}
 
